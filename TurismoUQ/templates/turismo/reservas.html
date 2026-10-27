@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load turismo_tags %}
+{% block title %}Reservas · TurismoUQ{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4"><div><h1 class="h3 mb-1">Reservas</h1><p class="text-secondary mb-0">Consulta, filtra y administra las reservas.</p></div><a class="btn btn-success" href="{% url 'disponibilidad' %}">Nueva reserva</a></div>
+<form method="get" class="card shadow-sm mb-4"><div class="card-body"><div class="row g-3 align-items-end">
+  <div class="col-sm-6 col-lg-3">{{ form.estado.label_tag }}{{ form.estado }}{{ form.estado.errors }}</div>
+  <div class="col-sm-6 col-lg-3">{{ form.fecha_desde.label_tag }}{{ form.fecha_desde }}{{ form.fecha_desde.errors }}</div>
+  <div class="col-sm-6 col-lg-3">{{ form.fecha_hasta.label_tag }}{{ form.fecha_hasta }}{{ form.fecha_hasta.errors }}</div>
+  <div class="col-sm-6 col-lg-2">{{ form.cliente.label_tag }}{{ form.cliente }}{{ form.cliente.errors }}</div>
+  <div class="col-lg-1 d-grid"><button class="btn btn-success">Filtrar</button></div>
+</div></div></form>
+<div class="d-flex justify-content-between small text-secondary mb-2"><span>{{ total }} reservas</span><span>Página {{ pagina }} de {{ total_paginas }}</span></div>
+<div class="table-responsive card shadow-sm"><table class="table table-hover align-middle mb-0"><thead class="table-light"><tr><th>Número</th><th>Cliente</th><th>Check-in / check-out</th><th>Estado</th><th class="text-end">Total</th><th></th></tr></thead><tbody>
+{% for reserva in reservas %}<tr><td><strong>#{{ reserva.id_reserva }}</strong><div class="small text-secondary">Creada {{ reserva.fecha_reserva|date:"d/m/Y" }}</div></td><td>{{ reserva.cliente }}<div class="small text-secondary">{{ reserva.cedula_cliente }}</div></td><td>{{ reserva.fecha_checkin|date:"d/m/Y" }} – {{ reserva.fecha_checkout|date:"d/m/Y" }}</td><td><span class="badge {% if reserva.estado == 'CONFIRMADA' %}text-bg-success{% elif reserva.estado == 'PENDIENTE' %}text-bg-warning{% elif reserva.estado == 'CANCELADA' %}text-bg-secondary{% else %}text-bg-primary{% endif %}">{{ reserva.estado|title }}</span></td><td class="text-end">{{ reserva.total|pesos_colombianos }}</td><td class="text-end"><a class="btn btn-sm btn-outline-success" href="{% url 'reserva_confirmacion' reserva.id_reserva %}">Ver detalle</a></td></tr>
+{% empty %}<tr><td colspan="6" class="text-center text-secondary py-4">No hay reservas que coincidan con los filtros.</td></tr>{% endfor %}
+</tbody></table></div>
+{% if total_paginas > 1 %}<nav class="mt-3" aria-label="Paginación de reservas"><ul class="pagination justify-content-center">
+  {% if hay_anterior %}<li class="page-item"><a class="page-link" href="{{ url_anterior }}">Anterior</a></li>{% endif %}
+  {% for item in paginas %}<li class="page-item {% if item.numero == pagina %}active{% endif %}"><a class="page-link" href="{{ item.url }}">{{ item.numero }}</a></li>{% endfor %}
+  {% if hay_siguiente %}<li class="page-item"><a class="page-link" href="{{ url_siguiente }}">Siguiente</a></li>{% endif %}
+</ul></nav>{% endif %}
+{% endblock %}

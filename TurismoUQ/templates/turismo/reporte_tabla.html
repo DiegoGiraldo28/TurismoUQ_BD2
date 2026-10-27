@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load turismo_tags %}
+{% block title %}{{ titulo }} · Reportes TurismoUQ{% endblock %}
+{% block content %}
+<a href="{% url 'reportes' %}" class="small text-success text-decoration-none">← Todos los reportes</a>
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mt-2 mb-4"><div><h1 class="h3 mb-1">{{ titulo }}</h1><p class="text-secondary mb-0">Consulta analítica de la base de datos TurismoUQ.</p></div>
+  {% if slug == 'ocupacion-mensual' %}<form method="post">{% csrf_token %}<button class="btn btn-outline-success" name="accion" value="refrescar">Refrescar vista materializada</button></form>{% endif %}
+</div>
+{% if form %}<form method="get" class="card shadow-sm mb-4"><div class="card-body"><div class="row g-3 align-items-end"><div class="col-md-5">{{ form.fecha_inicio.label_tag }}{{ form.fecha_inicio }}{{ form.fecha_inicio.errors }}</div><div class="col-md-5">{{ form.fecha_fin.label_tag }}{{ form.fecha_fin }}{{ form.fecha_fin.errors }}</div><div class="col-md-2 d-grid"><button class="btn btn-success">Consultar</button></div></div><p class="form-text mb-0 mt-2">Las fechas se enlazan como parámetros Oracle; el día final se incluye completo.</p></div></form>{% endif %}
+{% if slug == 'por-fechas' and not form.is_bound %}<div class="alert alert-info">Selecciona un rango de fechas para ejecutar el reporte.</div>{% endif %}
+{% if mostrar_tabla and reporte %}
+  {% if slug == 'ocupacion-mensual' %}<div class="alert alert-light border">Último refresco: <strong>{% if reporte.fecha_refresco %}{{ reporte.fecha_refresco|date:"d/m/Y H:i:s" }}{% else %}Sin fecha registrada{% endif %}</strong></div>{% endif %}
+  <div class="d-flex justify-content-between small text-secondary mb-2"><span>{{ reporte.filas|length }} filas</span></div>
+  <div class="table-responsive card shadow-sm"><table class="table table-hover table-sm align-middle mb-0"><thead class="table-light"><tr>{% for columna in reporte.columnas %}<th>{{ columna.etiqueta }}</th>{% endfor %}</tr></thead><tbody>
+    {% for fila in reporte.filas %}<tr>{% for columna in reporte.columnas %}<td>{% with valor=fila|obtener_clave:columna.nombre %}{% if columna.monetaria %}{{ valor|pesos_colombianos }}{% elif "fecha" in columna.nombre %}{{ valor|date:"d/m/Y H:i" }}{% else %}{{ valor|default_if_none:"—" }}{% endif %}{% endwith %}</td>{% endfor %}</tr>{% empty %}<tr><td colspan="{{ reporte.columnas|length|default:1 }}" class="text-center text-secondary py-4">No hay filas para mostrar.</td></tr>{% endfor %}
+  </tbody></table></div>
+{% endif %}
+{% if reporte %}<details class="card shadow-sm mt-4"><summary class="card-header fw-semibold">Ver SQL usado</summary><div class="card-body"><pre class="sql-block mb-0"><code>{{ reporte.sql }}</code></pre>{% if reporte.sql_auxiliar %}<hr><p class="small text-secondary mb-1">Comando auxiliar y consulta del último refresco:</p><pre class="sql-block mb-0"><code>{{ reporte.sql_auxiliar }}</code></pre>{% endif %}</div></details>{% endif %}
+{% endblock %}

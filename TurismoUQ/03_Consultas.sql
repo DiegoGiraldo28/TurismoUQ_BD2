@@ -19,7 +19,8 @@ PIVOT (
 ORDER BY municipio;
 
 -- =============================================================
--- CONSULTA 2: Ingresos por municipio, tipo de alojamiento y temporada, con ROLLUP
+-- CONSULTA 2: Ingresos por municipio, tipo de alojamiento y temporada (ALTA/MEDIA/BAJA), con ROLLUP
+-- La temporada de una reserva es la de su fecha de check-in.
 -- =============================================================
 SELECT m.nombre AS municipio,
        ta.nombre AS tipo_alojamiento,
@@ -34,7 +35,8 @@ JOIN HABITACION h ON h.id_habitacion = rh.id_habitacion
 JOIN ALOJAMIENTO a ON a.id_alojamiento = h.id_alojamiento
 JOIN MUNICIPIO m ON m.id_municipio = a.id_municipio
 JOIN TIPO_ALOJAMIENTO ta ON ta.id_tipo_alojamiento = a.id_tipo_alojamiento
-JOIN TEMPORADA t ON r.fecha_checkin BETWEEN t.fecha_inicio AND t.fecha_fin
+JOIN PERIODO_TEMPORADA pt ON r.fecha_checkin BETWEEN pt.fecha_inicio AND pt.fecha_fin
+JOIN TEMPORADA t ON t.id_temporada = pt.id_temporada
 GROUP BY ROLLUP(m.nombre, ta.nombre, t.nombre)
 ORDER BY municipio, tipo_alojamiento, temporada;
 
@@ -95,7 +97,18 @@ ORDER BY r.fecha_checkin;
 
 -- =============================================================
 -- CONSULTA 6: Vista materializada de ocupacion mensual
--- (La creacion de la vista se ejecuta sola)
+-- POLITICA DE REFRESCO: REFRESH COMPLETE ON DEMAND
+--  * ON DEMAND (y no ON COMMIT): las reservas se insertan todo el dia y el reporte
+--    es mensual; refrescar en cada COMMIT penalizaria cada escritura sin que nadie
+--    lo necesite.
+--  * COMPLETE (y no FAST): FAST exige MATERIALIZED VIEW LOGs en 4 tablas (mas costo
+--    en cada insercion) y la vista agrega con joins multiples; recalcularla completa
+--    son pocos segundos con este volumen.
+--  * Cuando se refresca: al cierre de cada mes, despues de la liquidacion mensual,
+--    o a mano con  EXEC DBMS_MVIEW.REFRESH('MV_OCUPACION_MENSUAL', 'C');
+--    (o programado con DBMS_SCHEDULER en la madrugada, fuera de horario de reservas).
+--  * Costo aceptado: entre refrescos la vista puede estar desactualizada; para
+--    analisis mensual es tolerable.
 -- =============================================================
 CREATE MATERIALIZED VIEW mv_ocupacion_mensual
 BUILD IMMEDIATE

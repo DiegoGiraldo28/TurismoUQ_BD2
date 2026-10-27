@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% load turismo_tags %}
+{% block title %}Auditoría de tarifas · TurismoUQ{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-end gap-2 mb-4"><div><h1 class="h3 mb-1">Auditoría de tarifas</h1><p class="text-secondary mb-0">Últimos {{ auditoria|length }} movimientos registrados por el disparador Oracle.</p></div><a class="btn btn-outline-success" href="{% url 'tarifas' %}">Volver a tarifas</a></div>
+<div class="table-responsive card shadow-sm"><table class="table table-hover align-middle mb-0"><thead class="table-light"><tr><th>Fecha</th><th>Usuario Oracle</th><th>Operación</th><th>Alojamiento</th><th>Habitación</th><th>Temporada</th><th class="text-end">Precio anterior</th><th class="text-end">Precio nuevo</th></tr></thead><tbody>{% for fila in auditoria %}<tr><td>{{ fila.fecha|date:"d/m/Y H:i:s" }}</td><td>{{ fila.usuario }}</td><td><span class="badge text-bg-light border">{{ fila.operacion }}</span></td><td>{{ fila.alojamiento|default:"—" }}</td><td>{{ fila.habitacion|default:"—" }}</td><td>{{ fila.temporada|default:"—" }}</td><td class="text-end">{{ fila.precio_anterior|pesos_colombianos }}</td><td class="text-end">{{ fila.precio_nuevo|pesos_colombianos }}</td></tr>{% empty %}<tr><td colspan="8" class="text-center text-secondary py-4">Aún no hay cambios auditados.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

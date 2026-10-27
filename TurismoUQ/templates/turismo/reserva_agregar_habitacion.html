@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load turismo_tags %}
+{% block title %}Agregar habitación · Reserva #{{ reserva.id_reserva }}{% endblock %}
+{% block content %}
+<a href="{% url 'reserva_confirmacion' reserva.id_reserva %}" class="small text-success text-decoration-none">← Volver a la reserva</a>
+<div class="row g-4 mt-1"><div class="col-lg-6"><section class="card shadow-sm"><div class="card-body"><h1 class="h4">Agregar habitación a la reserva #{{ reserva.id_reserva }}</h1><p class="text-secondary">Estadía del {{ reserva.fecha_checkin|date:"d/m/Y" }} al {{ reserva.fecha_checkout|date:"d/m/Y" }}.</p>
+  {% if habitacion %}<h2 class="h5">{{ habitacion.alojamiento }} · {{ habitacion.numero }}</h2><p>{{ habitacion.tipo_habitacion }} · capacidad {{ habitacion.capacidad }} huéspedes</p>{% endif %}
+  <div class="h4 text-success">{{ cotizacion|pesos_colombianos }}</div><table class="table table-sm"><thead><tr><th>Temporada</th><th>Noches</th><th>Tarifa</th><th class="text-end">Subtotal</th></tr></thead><tbody>{% for tramo in desglose %}<tr><td>{{ tramo.temporada|title }}</td><td>{{ tramo.noches }}</td><td>{{ tramo.precio_noche|pesos_colombianos }}</td><td class="text-end">{{ tramo.subtotal|pesos_colombianos }}</td></tr>{% endfor %}</tbody></table>
+</div></section></div><div class="col-lg-6"><section class="card shadow-sm"><div class="card-body"><h2 class="h5">Huéspedes</h2><p class="text-secondary">La base verificará disponibilidad, capacidad y solapamientos al agregarla.</p><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-success">Agregar habitación</button></form></div></section></div></div>
+{% endblock %}

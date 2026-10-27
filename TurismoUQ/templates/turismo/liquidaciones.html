@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load turismo_tags %}
+{% block title %}Liquidación mensual · TurismoUQ{% endblock %}
+{% block content %}
+<div class="mb-4"><h1 class="h3 mb-1">Liquidación mensual</h1><p class="text-secondary mb-0">Ejecuta el procedimiento Oracle para calcular ingresos y netos por alojamiento.</p></div>
+<form method="post" class="card shadow-sm mb-4"><div class="card-body"><div class="row g-3 align-items-end">
+  {% csrf_token %}<div class="col-md-4">{{ form.anio.label_tag }}{{ form.anio }}{{ form.anio.errors }}</div><div class="col-md-4">{{ form.mes.label_tag }}{{ form.mes }}{{ form.mes.errors }}</div><div class="col-md-4 d-grid"><button class="btn btn-success">Ejecutar liquidación</button></div>
+</div><p class="form-text mb-0 mt-2">Los meses fuera del rango 1–12 se validan en PKG_TURISMO y se informan desde Oracle.</p></div></form>
+{% if totales %}<div class="d-flex justify-content-between align-items-end mb-3"><div><h2 class="h5 mb-1">Resultado de {{ form.cleaned_data.mes|stringformat:'02d' }}/{{ form.cleaned_data.anio }}</h2><p class="small text-secondary mb-0">{{ liquidaciones|length }} alojamientos procesados.</p></div></div>
+<div class="table-responsive card shadow-sm"><table class="table table-hover align-middle mb-0"><thead class="table-light"><tr><th>Alojamiento</th><th class="text-end">Reservas</th><th class="text-end">Ingresos habitaciones</th><th class="text-end">Ingresos servicios</th><th class="text-end">Comisión</th><th class="text-end">Neto alojamiento</th></tr></thead><tbody>
+{% for fila in liquidaciones %}<tr><td>{{ fila.alojamiento }}</td><td class="text-end">{{ fila.num_reservas }}</td><td class="text-end">{{ fila.ingresos_habitaciones|pesos_colombianos }}</td><td class="text-end">{{ fila.ingresos_servicios|pesos_colombianos }}</td><td class="text-end">{{ fila.comision|pesos_colombianos }}</td><td class="text-end">{{ fila.neto_alojamiento|pesos_colombianos }}</td></tr>{% empty %}<tr><td colspan="6" class="text-center text-secondary py-4">El procedimiento no dejó filas para ese mes.</td></tr>{% endfor %}
+<tr class="table-success fw-semibold"><td>Totales</td><td class="text-end">{{ totales.num_reservas }}</td><td class="text-end">{{ totales.ingresos_habitaciones|pesos_colombianos }}</td><td class="text-end">{{ totales.ingresos_servicios|pesos_colombianos }}</td><td class="text-end">{{ totales.comision|pesos_colombianos }}</td><td class="text-end">{{ totales.neto_alojamiento|pesos_colombianos }}</td></tr>
+</tbody></table></div>{% endif %}
+{% endblock %}

@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Reportes · TurismoUQ{% endblock %}
+{% block content %}
+<div class="mb-4"><h1 class="h3 mb-1">Reportes analíticos</h1><p class="text-secondary mb-0">Consultas de análisis basadas en `03_Consultas.sql`.</p></div>
+<div class="row g-3">{% for slug, titulo in reportes %}<div class="col-md-6 col-xl-4"><a href="{% url 'reporte' slug %}" class="card report-link h-100 shadow-sm text-decoration-none"><div class="card-body"><h2 class="h5 text-success">{{ titulo }}</h2><span class="small text-secondary">Abrir reporte →</span></div></a></div>{% endfor %}</div>
+{% endblock %}

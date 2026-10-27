@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }} · TurismoUQ{% endblock %}
+{% block content %}
+<a href="{% url 'clientes' %}" class="small text-success text-decoration-none">← Volver a clientes</a>
+<section class="card shadow-sm mt-3"><div class="card-body p-4"><h1 class="h4">{{ titulo }}</h1>
+{% if cliente %}<div class="alert alert-light border">Cédula: <strong>{{ cliente.cedula }}</strong> <span class="small text-secondary">(la cédula no se puede editar)</span></div>{% endif %}
+<form method="post">{% csrf_token %}{% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}<div class="row g-3">{% for campo in form %}<div class="col-md-6">{{ campo.label_tag }}{{ campo }}{% if campo.errors %}<div class="invalid-feedback d-block">{{ campo.errors }}</div>{% endif %}</div>{% endfor %}</div><div class="mt-4 d-flex gap-2"><button class="btn btn-success">Guardar</button><a class="btn btn-outline-secondary" href="{% url 'clientes' %}">Cancelar</a></div></form>
+</div></section>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Alojamientos · TurismoUQ{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+  <div><h1 class="h3 mb-1">Alojamientos</h1><p class="text-secondary mb-0">Explora hoteles, fincas, glampings, hostales y casas campestres.</p></div>
+  <span class="badge text-bg-light border">{{ alojamientos|length }} resultados</span>
+</div>
+<form method="get" class="card shadow-sm mb-4"><div class="card-body"><div class="row g-3 align-items-end">
+  <div class="col-md-5">{{ form.municipio.label_tag }}{{ form.municipio }}{{ form.municipio.errors }}</div>
+  <div class="col-md-5">{{ form.tipo.label_tag }}{{ form.tipo }}{{ form.tipo.errors }}</div>
+  <div class="col-md-2 d-grid"><button class="btn btn-success">Filtrar</button></div>
+</div></div></form>
+{% if alojamientos %}
+<div class="row g-3">
+  {% for alojamiento in alojamientos %}
+  <div class="col-md-6 col-xl-4"><article class="card lodging-card h-100 shadow-sm"><div class="card-body d-flex flex-column">
+    <div class="d-flex justify-content-between gap-2 mb-2"><span class="badge text-bg-success-subtle text-success-emphasis">{{ alojamiento.tipo_alojamiento }}</span>{% if alojamiento.calificacion %}<span class="rating">★ {{ alojamiento.calificacion }}/5</span>{% else %}<span class="small text-secondary">Sin reseñas</span>{% endif %}</div>
+    <h2 class="h5">{{ alojamiento.nombre }}</h2><p class="text-secondary mb-2">{{ alojamiento.municipio }}</p>
+    <p class="small mb-3">{{ alojamiento.direccion }}</p>
+    <div class="small text-secondary mb-3">{{ alojamiento.num_habitaciones }} habitaciones · Capacidad total {{ alojamiento.capacidad_total }}</div>
+    <a class="btn btn-outline-success mt-auto" href="{% url 'alojamiento_detalle' alojamiento.id_alojamiento %}">Ver alojamiento</a>
+  </div></article></div>
+  {% endfor %}
+</div>
+{% else %}<div class="alert alert-light border">No encontramos alojamientos activos con esos filtros.</div>{% endif %}
+{% endblock %}

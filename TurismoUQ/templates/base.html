@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}TurismoUQ{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{% load static %}{% static 'css/turismo.css' %}" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container">
+      <a class="navbar-brand fw-semibold" href="/">TurismoUQ</a>
+      {% if user.is_authenticated %}
+      <div class="navbar-nav flex-row gap-3 ms-4">
+        <a class="nav-link text-white" href="{% url 'tablero' %}">Inicio</a>
+        <a class="nav-link text-white" href="{% url 'alojamientos' %}">Alojamientos</a>
+        <a class="nav-link text-white" href="{% url 'disponibilidad' %}">Disponibilidad</a>
+        <a class="nav-link text-white" href="{% url 'reservas' %}">Reservas</a>
+        <a class="nav-link text-white" href="{% url 'clientes' %}">Clientes</a>
+        <a class="nav-link text-white" href="{% url 'tarifas' %}">Tarifas</a>
+        <a class="nav-link text-white" href="{% url 'liquidaciones' %}">Liquidaciones</a>
+        <a class="nav-link text-white" href="{% url 'reportes' %}">Reportes</a>
+        <a class="nav-link text-white" href="{% url 'diagnostico' %}">Diagnóstico</a>
+      </div>
+      {% endif %}
+      <div class="ms-auto d-flex align-items-center gap-3 text-white">
+        {% if user.is_authenticated %}
+          <span>{{ user.get_username }}</span>
+          <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn btn-outline-light btn-sm">Cerrar sesión</button></form>
+        {% else %}
+          <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}">Ingresar</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+  <main class="container py-4 flex-grow-1">
+    {% if messages %}
+      {% for message in messages %}<div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>{% endfor %}
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="border-top py-3 text-center text-secondary"><div class="container">TurismoUQ · Quindío, Colombia</div></footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

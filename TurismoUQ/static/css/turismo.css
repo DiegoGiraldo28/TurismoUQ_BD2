@@ -1,0 +1,16 @@
+body { background-color: #f8faf8; }
+.navbar-brand { letter-spacing: .02em; }
+.card { border: 0; }
+.metric-card { border-left: 4px solid #198754; }
+.metric-label { color: #66716b; font-size: .9rem; }
+.metric-value { color: #18392a; font-size: 1.85rem; font-weight: 700; margin-top: .25rem; }
+.chart-wrap { height: 320px; position: relative; }
+.lodging-card { transition: transform .15s ease, box-shadow .15s ease; }
+.lodging-card:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1.4rem #143d2518 !important; }
+.rating { color: #ad7400; white-space: nowrap; }
+.rating-summary { min-width: 130px; }
+.rating-score { color: #198754; font-size: 2.25rem; font-weight: 700; line-height: 1.1; }
+.season-dot { width: .65rem; height: .65rem; display: inline-block; border-radius: 50%; margin-right: .2rem; }
+.season-dot.alta { background: #dc3545; }
+.season-dot.media { background: #fd7e14; }
+.season-dot.baja { background: #198754; }

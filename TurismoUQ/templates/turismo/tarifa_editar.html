@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% load turismo_tags %}
+{% block title %}Editar tarifa · TurismoUQ{% endblock %}
+{% block content %}
+<a href="{% url 'tarifas' %}" class="small text-success text-decoration-none">← Volver a tarifas</a>
+<section class="card shadow-sm mt-3"><div class="card-body p-4"><h1 class="h4">Editar tarifa</h1><p class="text-secondary">{{ tarifa.alojamiento }} · {{ tarifa.municipio }} · habitación {{ tarifa.numero }} ({{ tarifa.tipo_habitacion }}) · temporada {{ tarifa.temporada|title }}</p><p>Precio actual: <strong>{{ tarifa.precio_noche|pesos_colombianos }}</strong></p><form method="post">{% csrf_token %}{{ form.as_p }}<div class="d-flex gap-2 mt-3"><button class="btn btn-success">Guardar tarifa</button><a class="btn btn-outline-secondary" href="{% url 'tarifas' %}">Cancelar</a></div></form><p class="small text-secondary mt-3 mb-0">El disparador de Oracle registrará automáticamente el cambio en la auditoría.</p></div></section>
+{% endblock %}

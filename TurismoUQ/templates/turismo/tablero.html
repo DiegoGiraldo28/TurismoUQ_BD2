@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load turismo_tags %}
+{% block title %}Inicio · TurismoUQ{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <h1 class="h3 mb-1">Panel de TurismoUQ</h1>
+  <p class="text-secondary mb-0">Resumen de alojamientos y actividad turística del Quindío.</p>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl"><div class="card metric-card h-100"><div class="card-body"><div class="metric-label">Alojamientos</div><div class="metric-value">{{ resumen.alojamientos|default:0 }}</div></div></div></div>
+  <div class="col-6 col-xl"><div class="card metric-card h-100"><div class="card-body"><div class="metric-label">Habitaciones</div><div class="metric-value">{{ resumen.habitaciones|default:0 }}</div></div></div></div>
+  <div class="col-6 col-xl"><div class="card metric-card h-100"><div class="card-body"><div class="metric-label">Clientes</div><div class="metric-value">{{ resumen.clientes|default:0 }}</div></div></div></div>
+  <div class="col-6 col-xl"><div class="card metric-card h-100"><div class="card-body"><div class="metric-label">Reservas activas</div><div class="metric-value">{{ resumen.reservas_activas|default:0 }}</div><div class="small text-secondary">Pendientes y confirmadas</div></div></div></div>
+  <div class="col-12 col-xl"><div class="card metric-card h-100"><div class="card-body"><div class="metric-label">Ingresos del mes</div><div class="metric-value fs-4">{{ resumen.ingresos_mes|pesos_colombianos }}</div></div></div></div>
+</div>
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-start mb-3"><div><h2 class="h5 mb-1">Ocupación mensual</h2><p class="text-secondary small mb-0">Reservas agrupadas por mes según la vista materializada.</p></div><span class="badge text-bg-success">Últimos 12 meses disponibles</span></div>
+    {% if ocupacion %}<div class="chart-wrap"><canvas id="ocupacionChart" aria-label="Gráfico de reservas mensuales" role="img"></canvas></div>{% else %}<p class="text-secondary mb-0">La vista materializada aún no tiene datos para mostrar.</p>{% endif %}
+  </div>
+</div>
+{% if ocupacion %}
+{{ grafico_labels|json_script:"grafico-labels" }}
+{{ grafico_reservas|json_script:"grafico-reservas" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+  const labels = JSON.parse(document.getElementById("grafico-labels").textContent);
+  const reservas = JSON.parse(document.getElementById("grafico-reservas").textContent);
+  new Chart(document.getElementById("ocupacionChart"), {
+    type: "bar",
+    data: { labels, datasets: [{ label: "Reservas", data: reservas, backgroundColor: "#198754", borderRadius: 5 }] },
+    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { display: false } } }
+  });
+</script>
+{% endif %}
+{% endblock %}

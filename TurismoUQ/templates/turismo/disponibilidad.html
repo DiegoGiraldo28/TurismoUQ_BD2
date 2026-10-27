@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load turismo_tags %}
+{% block title %}Disponibilidad y cotización · TurismoUQ{% endblock %}
+{% block content %}
+<div class="mb-4"><h1 class="h3 mb-1">Buscar disponibilidad</h1><p class="text-secondary mb-0">Consulta habitaciones y cotiza la estadía con las tarifas vigentes por temporada.</p></div>
+<form method="get" class="card shadow-sm mb-4"><div class="card-body"><div class="row g-3 align-items-end">
+  <div class="col-sm-6 col-lg-3">{{ form.fecha_entrada.label_tag }}{{ form.fecha_entrada }}{{ form.fecha_entrada.errors }}</div>
+  <div class="col-sm-6 col-lg-3">{{ form.fecha_salida.label_tag }}{{ form.fecha_salida }}{{ form.fecha_salida.errors }}</div>
+  <div class="col-sm-6 col-lg-2">{{ form.huespedes.label_tag }}{{ form.huespedes }}{{ form.huespedes.errors }}</div>
+  <div class="col-sm-6 col-lg-3">{{ form.municipio.label_tag }}{{ form.municipio }}{{ form.municipio.errors }}</div>
+  <div class="col-lg-1 d-grid"><button class="btn btn-success">Buscar</button></div>
+  {{ form.reserva }}
+</div></div></form>
+{% if reserva %}<div class="alert alert-info">Buscando habitación adicional para la reserva <strong>#{{ reserva.reserva.id_reserva }}</strong>, del {{ reserva.reserva.fecha_checkin|date:"d/m/Y" }} al {{ reserva.reserva.fecha_checkout|date:"d/m/Y" }}.</div>{% endif %}
+{% if busqueda %}
+  <div class="d-flex justify-content-between align-items-center mb-3"><div><h2 class="h5 mb-1">Habitaciones disponibles</h2><p class="small text-secondary mb-0">{{ busqueda.fecha_entrada|date:"d/m/Y" }} – {{ busqueda.fecha_salida|date:"d/m/Y" }} · {{ busqueda.huespedes }} huésped{{ busqueda.huespedes|pluralize:"es" }}</p></div><span class="badge text-bg-light border">{{ habitaciones|length }} opciones</span></div>
+  {% if habitaciones %}
+  <div class="row g-3">{% for habitacion in habitaciones %}
+    <div class="col-xl-6"><article class="card shadow-sm h-100"><div class="card-body">
+      <div class="d-flex flex-wrap justify-content-between gap-2"><div><span class="badge text-bg-success-subtle text-success-emphasis">{{ habitacion.tipo_alojamiento }}</span><h3 class="h5 mt-2 mb-1">{{ habitacion.alojamiento }}</h3><p class="text-secondary mb-1">{{ habitacion.municipio }} · Habitación {{ habitacion.numero }}</p><p class="small text-secondary">{{ habitacion.tipo_habitacion }} · Hasta {{ habitacion.capacidad }} huéspedes</p></div><div class="text-end"><div class="small text-secondary">Total de la estadía</div><div class="h4 text-success">{{ habitacion.valor_total|pesos_colombianos }}</div></div></div>
+      <div class="table-responsive"><table class="table table-sm mb-3"><thead><tr><th>Temporada</th><th>Noches</th><th>Tarifa por noche</th><th class="text-end">Subtotal</th></tr></thead><tbody>{% for tramo in habitacion.desglose %}<tr><td>{{ tramo.temporada|title }}</td><td>{{ tramo.noches }}</td><td>{{ tramo.precio_noche|pesos_colombianos }}</td><td class="text-end">{{ tramo.subtotal|pesos_colombianos }}</td></tr>{% endfor %}</tbody></table></div>
+      {% if reserva %}<a class="btn btn-success" href="{% url 'reserva_agregar_habitacion' reserva.reserva.id_reserva habitacion.id_habitacion %}">Agregar a reserva #{{ reserva.reserva.id_reserva }}</a>{% else %}<a class="btn btn-success" href="{% url 'reserva_crear' habitacion.id_habitacion %}?fecha_entrada={{ busqueda.fecha_entrada|date:'Y-m-d' }}&amp;fecha_salida={{ busqueda.fecha_salida|date:'Y-m-d' }}&amp;huespedes={{ busqueda.huespedes }}">Continuar con la reserva</a>{% endif %}
+    </div></article></div>
+  {% endfor %}</div>
+  {% else %}<div class="alert alert-light border">No hay habitaciones disponibles que cumplan esos criterios.</div>{% endif %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Conexión a la base de datos · TurismoUQ{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+  <div><h1 class="h3 mb-1">Diagnóstico de base de datos</h1><p class="text-secondary mb-0">Conteo de filas en el esquema TurismoUQ.</p></div>
+  <span class="badge text-bg-light border">Oracle · XEPDB1</span>
+</div>
+{% if filas %}
+  <div class="alert alert-success">Conexión correcta. Se consultaron {{ filas|length }} tablas.</div>
+  <div class="card shadow-sm"><div class="table-responsive"><table class="table table-striped table-hover mb-0">
+    <thead class="table-light"><tr><th scope="col">Tabla</th><th scope="col" class="text-end">Filas</th></tr></thead>
+    <tbody>{% for fila in filas %}<tr><td><code>{{ fila.tabla }}</code></td><td class="text-end">{{ fila.filas }}</td></tr>{% endfor %}</tbody>
+  </table></div></div>
+{% else %}
+  <div class="alert alert-warning">No hay conteos disponibles. Revisa el mensaje anterior y la configuración Oracle.</div>
+{% endif %}
+{% endblock %}

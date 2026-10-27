@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load turismo_tags %}
+{% block title %}Crear reserva · TurismoUQ{% endblock %}
+{% block content %}
+<a href="{% url 'disponibilidad' %}" class="small text-success text-decoration-none">← Volver a disponibilidad</a>
+<div class="row g-4 mt-1">
+  <div class="col-lg-5"><section class="card shadow-sm"><div class="card-body"><h1 class="h4">Habitación seleccionada</h1>
+    {% if habitacion %}<h2 class="h5 mt-3">{{ habitacion.alojamiento }} · {{ habitacion.numero }}</h2><p class="text-secondary">{{ habitacion.municipio }} · {{ habitacion.tipo_habitacion }} · capacidad {{ habitacion.capacidad }}</p>{% else %}<p class="text-secondary">Habitación #{{ id_habitacion }}</p>{% endif %}
+    {% if cotizacion != None %}<hr><div class="small text-secondary">Valor cotizado de la estadía</div><div class="h3 text-success">{{ cotizacion|pesos_colombianos }}</div><table class="table table-sm"><thead><tr><th>Temporada</th><th>Noches × tarifa</th><th class="text-end">Subtotal</th></tr></thead><tbody>{% for tramo in desglose %}<tr><td>{{ tramo.temporada|title }}</td><td>{{ tramo.noches }} × {{ tramo.precio_noche|pesos_colombianos }}</td><td class="text-end">{{ tramo.subtotal|pesos_colombianos }}</td></tr>{% endfor %}</tbody></table>{% else %}<div class="alert alert-warning mb-0">Selecciona fechas válidas desde la búsqueda para cotizar esta estadía.</div>{% endif %}
+  </div></section></div>
+  <div class="col-lg-7"><section class="card shadow-sm"><div class="card-body"><h2 class="h4">Datos de la reserva</h2><p class="text-secondary">Busca el cliente por cédula y selecciona el usuario responsable.</p>
+    {% if cliente %}<div class="alert alert-success"><strong>Cliente encontrado:</strong> {{ cliente.nombres }} {{ cliente.apellidos }} · cédula {{ cliente.cedula }}</div>{% endif %}
+    <form method="post" novalidate>{% csrf_token %}
+      {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="row g-3">
+        <div class="col-md-6">{{ form.fecha_entrada.label_tag }}{{ form.fecha_entrada }}{{ form.fecha_entrada.errors }}</div>
+        <div class="col-md-6">{{ form.fecha_salida.label_tag }}{{ form.fecha_salida }}{{ form.fecha_salida.errors }}</div>
+        <div class="col-md-6">{{ form.huespedes.label_tag }}{{ form.huespedes }}{{ form.huespedes.errors }}</div>
+        <div class="col-md-6">{{ form.id_usuario.label_tag }}{{ form.id_usuario }}{{ form.id_usuario.errors }}</div>
+        <div class="col-12">{{ form.cedula_cliente.label_tag }}{{ form.cedula_cliente }}{{ form.cedula_cliente.errors }}</div>
+      </div>
+      <div class="d-flex flex-wrap gap-2 mt-4"><button class="btn btn-outline-success" name="accion" value="buscar_cliente" formnovalidate>Buscar cliente</button><button class="btn btn-success" name="accion" value="crear_reserva">Crear reserva</button></div>
+    </form>
+  </div></section></div>
+</div>
+{% endblock %}
