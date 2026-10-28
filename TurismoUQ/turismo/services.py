@@ -486,14 +486,65 @@ def detalle_reserva(id_reserva):
     }
 
 
-def cancelar_reserva(id_reserva):
+# Cambios de estado permitidos para una reserva.
+# FINALIZADA y CANCELADA son estados finales: no salen de ahi.
+TRANSICIONES_RESERVA = {
+    "PENDIENTE": ("CONFIRMADA", "CANCELADA"),
+    "CONFIRMADA": ("FINALIZADA", "CANCELADA"),
+}
+
+
+class TransicionNoPermitida(Exception):
+    """El cambio de estado pedido no es valido para la reserva."""
+
+
+def _como_fecha(valor):
+    return valor.date() if isinstance(valor, datetime) else valor
+
+
+def puede_finalizarse(fecha_checkout):
+    """Una estadia solo se finaliza cuando ya llego su fecha de salida."""
+    return _como_fecha(fecha_checkout) <= date.today()
+
+
+def cambiar_estado_reserva(id_reserva, nuevo_estado):
+    """Cambia el estado de una reserva validando la transicion en el servidor.
+
+    Bloquea la fila con SELECT ... FOR UPDATE para que dos usuarios no cambien
+    la misma reserva al tiempo. Si el disparador trg_reserva_no_solape rechaza el
+    cambio (ORA-20005), la transaccion se revierte y el error sube a la vista.
+    Retorna el estado anterior.
+    """
     with transaction.atomic(using="turismo"):
         with connections["turismo"].cursor() as cursor:
             cursor.execute(
-                "UPDATE TURISMOUQ.RESERVA SET estado = %s WHERE id_reserva = %s",
-                ["CANCELADA", id_reserva],
+                "SELECT estado, fecha_checkout FROM TURISMOUQ.RESERVA "
+                "WHERE id_reserva = %s FOR UPDATE",
+                [id_reserva],
             )
-            return cursor.rowcount
+            fila = cursor.fetchone()
+            if fila is None:
+                raise TransicionNoPermitida(f"No se encontró la reserva {id_reserva}.")
+            estado_actual, fecha_checkout = fila
+            if nuevo_estado not in TRANSICIONES_RESERVA.get(estado_actual, ()):
+                raise TransicionNoPermitida(
+                    f"Una reserva {estado_actual.lower()} no puede pasar a {nuevo_estado.lower()}."
+                )
+            if nuevo_estado == "FINALIZADA" and not puede_finalizarse(fecha_checkout):
+                raise TransicionNoPermitida(
+                    "Solo se puede finalizar la estadía a partir de su fecha de salida "
+                    f"({_como_fecha(fecha_checkout):%d/%m/%Y})."
+                )
+            cursor.execute(
+                "UPDATE TURISMOUQ.RESERVA SET estado = %s WHERE id_reserva = %s",
+                [nuevo_estado, id_reserva],
+            )
+    return estado_actual
+
+
+def cancelar_reserva(id_reserva):
+    cambiar_estado_reserva(id_reserva, "CANCELADA")
+    return 1
 
 
 def listar_clientes_pagina(termino="", numero_pagina=1, por_pagina=50):
@@ -641,6 +692,9 @@ FROM (
     JOIN HABITACION h ON h.id_habitacion = rh.id_habitacion
     JOIN ALOJAMIENTO a ON a.id_alojamiento = h.id_alojamiento
     JOIN MUNICIPIO m ON m.id_municipio = a.id_municipio
+    WHERE r.estado <> 'CANCELADA'
+      AND r.fecha_checkin >= %s
+      AND r.fecha_checkin <  %s
 )
 PIVOT (
     COUNT(id_reserva)
@@ -768,10 +822,13 @@ MONETARY_REPORT_COLUMNS = {
 }
 
 
-def obtener_reporte(slug, fecha_inicio=None, fecha_fin=None):
+def obtener_reporte(slug, fecha_inicio=None, fecha_fin=None, anio=None):
     titulo, sql = REPORTES_SQL[slug]
     if slug == "por-fechas":
         nombres_columnas, filas = _consultar_detallado(sql, [fecha_inicio, fecha_fin + timedelta(days=1)])
+    elif slug == "pivot":
+        # Rango [1-ene del año, 1-ene del año siguiente): permite usar un índice sobre fecha_checkin
+        nombres_columnas, filas = _consultar_detallado(sql, [date(anio, 1, 1), date(anio + 1, 1, 1)])
     else:
         nombres_columnas, filas = _consultar_detallado(sql)
     columnas = [

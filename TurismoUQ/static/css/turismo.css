@@ -14,3 +14,40 @@ body { background-color: #f8faf8; }
 .season-dot.alta { background: #dc3545; }
 .season-dot.media { background: #fd7e14; }
 .season-dot.baja { background: #198754; }
+
+/* ---------- Logo ---------- */
+.brand-logo { border-radius: 9px; box-shadow: 0 2px 6px #0000002e; flex-shrink: 0; }
+
+/* ---------- Login ---------- */
+.login-page { background-color: #f4f7f5; }
+.login-hero {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at 85% 15%, #f6c34333 0, transparent 30%),
+              linear-gradient(160deg, #1f9d63 0%, #146c43 45%, #0b3d26 100%);
+}
+.login-hero .brand-word { letter-spacing: .02em; }
+.login-hero-text { max-width: 30rem; }
+.hero-kicker { color: #f6d77a; letter-spacing: .12em; }
+.login-hero .lead { color: #e3f4ea; }
+.hero-chip {
+  background: #ffffff1f;
+  border: 1px solid #ffffff38;
+  border-radius: 999px;
+  padding: .35rem .85rem;
+  font-size: .875rem;
+}
+.hero-foot { color: #cfe9da; }
+.hero-paisaje { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 42%; pointer-events: none; }
+.login-box { max-width: 400px; }
+.login-box .form-control:focus { border-color: #198754; box-shadow: 0 0 0 .25rem #19875433; }
+.password-toggle {
+  position: absolute; top: 50%; right: .5rem; transform: translateY(-50%);
+  z-index: 5; font-size: .85rem; text-decoration: none; color: #146c43;
+}
+.password-toggle:hover, .password-toggle:focus { color: #0b3d26; text-decoration: underline; }
+.login-hero h1 { color: #ffffff; }
+.login-box h2 { color: #0b3d26; }
+.login-box .btn-success { background: #198754; border-color: #198754; }
+.login-box .btn-success:hover { background: #146c43; border-color: #146c43; }
+.navbar .brand-logo { box-shadow: 0 0 0 2px #ffffff55; }

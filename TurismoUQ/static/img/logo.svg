@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TurismoUQ">
+  <defs>
+    <linearGradient id="tuq-cielo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#22a06b"/>
+      <stop offset="1" stop-color="#0f5132"/>
+    </linearGradient>
+    <clipPath id="tuq-marco">
+      <rect width="64" height="64" rx="15"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#tuq-marco)">
+    <rect width="64" height="64" fill="url(#tuq-cielo)"/>
+    <!-- Sol -->
+    <circle cx="45" cy="21" r="8" fill="#f6c343"/>
+    <!-- Montanas cafeteras -->
+    <path d="M0 44 C12 34 24 35 35 41 C45 47 55 43 64 36 V64 H0 Z" fill="#7cc576"/>
+    <path d="M0 53 C15 45 29 47 41 53 C50 57 58 55 64 51 V64 H0 Z" fill="#2f7d45"/>
+    <!-- Surcos de cafe -->
+    <path d="M6 58 C14 54 22 54 30 57 M36 60 C44 57 52 57 60 59" stroke="#58a866" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <!-- Palma de cera -->
+    <path d="M21 56 C22 44 22.6 31 24.2 19" stroke="#f4efe1" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <g stroke="#eaf8ee" stroke-width="2" fill="none" stroke-linecap="round">
+      <path d="M24.2 19 C19 15 14 15 9.5 18.5"/>
+      <path d="M24.2 19 C20.5 12 15.5 9.5 11 10.5"/>
+      <path d="M24.2 19 C25 12 28.5 8.5 32.5 7.5"/>
+      <path d="M24.2 19 C29.5 15 34.5 15.5 37.5 19"/>
+      <path d="M24.2 19 C22 23.5 19 26 15.5 27"/>
+      <path d="M24.2 19 C27.5 23 30.5 25 34 25.5"/>
+    </g>
+  </g>
+</svg>

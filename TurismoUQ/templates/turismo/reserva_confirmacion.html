@@ -3,8 +3,31 @@
 {% block title %}Reserva #{{ reserva.id_reserva }} · TurismoUQ{% endblock %}
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4"><div><a href="{% url 'reservas' %}" class="small text-success text-decoration-none">← Volver a reservas</a><h1 class="h3 mt-2 mb-1">Reserva #{{ reserva.id_reserva }}</h1><span class="badge {% if reserva.estado == 'CONFIRMADA' %}text-bg-success{% elif reserva.estado == 'PENDIENTE' %}text-bg-warning{% elif reserva.estado == 'CANCELADA' %}text-bg-secondary{% else %}text-bg-primary{% endif %}">{{ reserva.estado|title }}</span></div>
-  {% if reserva.estado == 'PENDIENTE' or reserva.estado == 'CONFIRMADA' %}<form method="post" action="{% url 'reserva_cancelar' reserva.id_reserva %}" onsubmit="return confirm('¿Cancelar la reserva #{{ reserva.id_reserva }}?');">{% csrf_token %}<button class="btn btn-outline-danger">Cancelar reserva</button></form>{% endif %}
+  {% if transiciones %}
+  <div class="d-flex flex-wrap align-items-start gap-2">
+    {% if 'CONFIRMADA' in transiciones %}
+    <form method="post" action="{% url 'reserva_cambiar_estado' reserva.id_reserva %}" onsubmit="return confirm('¿Confirmar la reserva #{{ reserva.id_reserva }}?');">{% csrf_token %}
+      <input type="hidden" name="estado" value="CONFIRMADA"><button class="btn btn-success">Confirmar reserva</button>
+    </form>
+    {% endif %}
+    {% if 'FINALIZADA' in transiciones %}
+      {% if puede_finalizar %}
+      <form method="post" action="{% url 'reserva_cambiar_estado' reserva.id_reserva %}" onsubmit="return confirm('¿Finalizar la estadía de la reserva #{{ reserva.id_reserva }}?');">{% csrf_token %}
+        <input type="hidden" name="estado" value="FINALIZADA"><button class="btn btn-primary">Finalizar estadía</button>
+      </form>
+      {% else %}
+      <span class="d-inline-block" tabindex="0" title="Se habilita a partir del {{ reserva.fecha_checkout|date:'d/m/Y' }}, fecha de salida">
+        <button class="btn btn-outline-primary" disabled>Finalizar estadía</button>
+      </span>
+      {% endif %}
+    {% endif %}
+    {% if 'CANCELADA' in transiciones %}
+    <form method="post" action="{% url 'reserva_cancelar' reserva.id_reserva %}" onsubmit="return confirm('¿Cancelar la reserva #{{ reserva.id_reserva }}?');">{% csrf_token %}<button class="btn btn-outline-danger">Cancelar reserva</button></form>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
+{% if reserva.estado == 'CONFIRMADA' and not puede_finalizar %}<p class="small text-secondary mb-4 text-lg-end">La estadía se podrá finalizar a partir del {{ reserva.fecha_checkout|date:"d/m/Y" }}.</p>{% endif %}
 <div class="row g-3 mb-4"><div class="col-lg-7"><section class="card shadow-sm h-100"><div class="card-body"><h2 class="h5">Cliente y estadía</h2><p class="mb-1"><strong>{{ reserva.nombres }} {{ reserva.apellidos }}</strong> · <a href="{% url 'cliente_editar' reserva.cedula_cliente %}">{{ reserva.cedula_cliente }}</a></p><p class="mb-1">{{ reserva.telefono }} · {{ reserva.email }}</p><p class="mb-1"><strong>Check-in:</strong> {{ reserva.fecha_checkin|date:"d/m/Y" }} · <strong>Check-out:</strong> {{ reserva.fecha_checkout|date:"d/m/Y" }}</p><p class="mb-1"><strong>Registrada:</strong> {{ reserva.fecha_reserva|date:"d/m/Y H:i" }}</p><p class="mb-0"><strong>Usuario responsable:</strong> {{ reserva.usuario_responsable }}</p></div></section></div>
   <div class="col-lg-5"><section class="card shadow-sm h-100"><div class="card-body"><h2 class="h5">Resumen de valores</h2><div class="d-flex justify-content-between"><span>Habitaciones</span><strong>{{ total_habitaciones|pesos_colombianos }}</strong></div><div class="d-flex justify-content-between"><span>Servicios</span><strong>{{ total_servicios|pesos_colombianos }}</strong></div><hr><div class="d-flex justify-content-between h5"><span>Total</span><strong class="text-success">{{ total|pesos_colombianos }}</strong></div><div class="d-flex justify-content-between small text-secondary"><span>Pagos con estado PAGADO</span><span>{{ total_pagado|pesos_colombianos }}</span></div></div></section></div></div>
 <section class="mb-4"><h2 class="h5">Habitaciones</h2><div class="table-responsive card shadow-sm"><table class="table align-middle mb-0"><thead class="table-light"><tr><th>Alojamiento</th><th>Habitación</th><th>Huéspedes</th><th class="text-end">Valor</th></tr></thead><tbody>{% for habitacion in habitaciones %}<tr><td>{{ habitacion.alojamiento }}</td><td>{{ habitacion.numero }} · {{ habitacion.tipo_habitacion }}</td><td>{{ habitacion.cantidad_huespedes }}</td><td class="text-end">{{ habitacion.valor_habitacion|pesos_colombianos }}</td></tr>{% empty %}<tr><td colspan="4" class="text-secondary">No hay habitaciones asociadas.</td></tr>{% endfor %}</tbody></table></div></section>

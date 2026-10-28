@@ -19,6 +19,8 @@ from .forms import (
     ReservaFiltroForm,
     ReservaForm,
     ReporteFechasForm,
+    ReporteAnioForm,
+    ANIOS_REPORTE,
     TarifaEditarForm,
 )
 from .services import (
@@ -54,6 +56,10 @@ from .services import (
     opciones_usuarios_sistema,
     REPORTES_SQL,
     refrescar_vista_ocupacion,
+    TRANSICIONES_RESERVA,
+    TransicionNoPermitida,
+    cambiar_estado_reserva as servicio_cambiar_estado_reserva,
+    puede_finalizarse,
 )
 
 logger = logging.getLogger(__name__)
@@ -283,6 +289,9 @@ def reserva_confirmacion(request, id_reserva):
         datos = None
     if datos is None:
         raise Http404("No se encontró la reserva solicitada.")
+    reserva = datos["reserva"]
+    datos["transiciones"] = TRANSICIONES_RESERVA.get(reserva["estado"], ())
+    datos["puede_finalizar"] = puede_finalizarse(reserva["fecha_checkout"])
     return render(request, "turismo/reserva_confirmacion.html", datos)
 
 
@@ -358,11 +367,34 @@ def reservas(request):
 @require_POST
 def cancelar_reserva(request, id_reserva):
     try:
-        filas = servicio_cancelar_reserva(id_reserva)
-        if filas:
-            messages.success(request, f"La reserva {id_reserva} fue cancelada.")
-        else:
-            messages.warning(request, "No se encontró la reserva para cancelar.")
+        servicio_cancelar_reserva(id_reserva)
+        messages.success(request, f"La reserva {id_reserva} fue cancelada.")
+    except TransicionNoPermitida as exc:
+        messages.warning(request, str(exc))
+    except Exception as exc:
+        _mostrar_error(request, exc)
+    return redirect("reserva_confirmacion", id_reserva=id_reserva)
+
+
+MENSAJES_CAMBIO_ESTADO = {
+    "CONFIRMADA": "La reserva {id} quedó confirmada.",
+    "FINALIZADA": "La estadía de la reserva {id} quedó finalizada.",
+    "CANCELADA": "La reserva {id} fue cancelada.",
+}
+
+
+@login_required
+@require_POST
+def cambiar_estado_reserva(request, id_reserva):
+    nuevo_estado = request.POST.get("estado", "").upper()
+    if nuevo_estado not in MENSAJES_CAMBIO_ESTADO:
+        messages.warning(request, "El estado solicitado no es válido.")
+        return redirect("reserva_confirmacion", id_reserva=id_reserva)
+    try:
+        servicio_cambiar_estado_reserva(id_reserva, nuevo_estado)
+        messages.success(request, MENSAJES_CAMBIO_ESTADO[nuevo_estado].format(id=id_reserva))
+    except TransicionNoPermitida as exc:
+        messages.warning(request, str(exc))
     except Exception as exc:
         _mostrar_error(request, exc)
     return redirect("reserva_confirmacion", id_reserva=id_reserva)
@@ -558,7 +590,21 @@ def reporte(request, slug):
             "SELECT LAST_REFRESH_DATE FROM USER_MVIEWS WHERE MVIEW_NAME = %s"
         )
     mostrar_tabla = False
-    if slug == "por-fechas":
+    titulo = titulos[slug]
+    if slug == "pivot":
+        # Año por defecto: el actual si está en los datos; si no, el más reciente
+        anio_defecto = date.today().year if date.today().year in ANIOS_REPORTE else ANIOS_REPORTE[-1]
+        form = ReporteAnioForm(request.GET or None, initial={"anio": anio_defecto})
+        anio = form.cleaned_data["anio"] if form.is_bound and form.is_valid() else anio_defecto
+        if not form.is_bound:
+            form = ReporteAnioForm(initial={"anio": anio_defecto})
+        titulo = f"{titulos[slug]} · {anio}"
+        try:
+            datos = obtener_reporte(slug, anio=anio)
+            mostrar_tabla = True
+        except Exception as exc:
+            _mostrar_error(request, exc)
+    elif slug == "por-fechas":
         form = ReporteFechasForm(request.GET or None)
         if form.is_bound and form.is_valid():
             try:
@@ -574,7 +620,7 @@ def reporte(request, slug):
             _mostrar_error(request, exc)
     return render(request, "turismo/reporte_tabla.html", {
         "reporte": datos,
-        "titulo": titulos[slug],
+        "titulo": titulo,
         "form": form,
         "slug": slug,
         "mostrar_tabla": mostrar_tabla,

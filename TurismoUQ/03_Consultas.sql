@@ -1,6 +1,12 @@
 -- =============================================================
 -- CONSULTA 1: Ocupacion por municipio y mes, con PIVOT
+-- Reservas no canceladas por mes de checkin, para el año elegido en :b_anio.
+-- Se filtra con un rango de fechas (1-ene a 1-ene del año siguiente) y no con
+-- EXTRACT(YEAR ...), para que Oracle pueda usar un indice sobre fecha_checkin.
 -- =============================================================
+VARIABLE b_anio NUMBER
+EXEC :b_anio := 2025;
+
 SELECT *
 FROM (
     SELECT m.nombre AS municipio,
@@ -11,6 +17,9 @@ FROM (
     JOIN HABITACION h ON h.id_habitacion = rh.id_habitacion
     JOIN ALOJAMIENTO a ON a.id_alojamiento = h.id_alojamiento
     JOIN MUNICIPIO m ON m.id_municipio = a.id_municipio
+    WHERE r.estado <> 'CANCELADA'
+      AND r.fecha_checkin >= TO_DATE(:b_anio || '-01-01', 'YYYY-MM-DD')
+      AND r.fecha_checkin <  ADD_MONTHS(TO_DATE(:b_anio || '-01-01', 'YYYY-MM-DD'), 12)
 )
 PIVOT (
     COUNT(id_reserva)

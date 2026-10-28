@@ -143,16 +143,27 @@ class LiquidacionMensualForm(forms.Form):
 
 class ReporteFechasForm(forms.Form):
     fecha_inicio = forms.DateField(
-        label="Fecha inicial", input_formats=["%Y-%m-%d"],
+        label="Checkin desde", input_formats=["%Y-%m-%d"],
         widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
     )
     fecha_fin = forms.DateField(
-        label="Fecha final", input_formats=["%Y-%m-%d"],
+        label="Checkin hasta", input_formats=["%Y-%m-%d"],
         widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
     )
 
     def clean(self):
         datos = super().clean()
         if datos.get("fecha_inicio") and datos.get("fecha_fin") and datos["fecha_fin"] < datos["fecha_inicio"]:
-            self.add_error("fecha_fin", "La fecha final debe ser igual o posterior a la inicial.")
+            self.add_error("fecha_fin", "El checkin hasta debe ser igual o posterior al checkin desde.")
         return datos
+
+
+ANIOS_REPORTE = (2024, 2025, 2026)
+
+
+class ReporteAnioForm(forms.Form):
+    anio = forms.TypedChoiceField(
+        label="Año", coerce=int,
+        choices=[(anio, str(anio)) for anio in ANIOS_REPORTE],
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )

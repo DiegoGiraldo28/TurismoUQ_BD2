@@ -11,6 +11,7 @@ urlpatterns = [
     path("reservas/nueva/<int:id_habitacion>/", views.crear_reserva, name="reserva_crear"),
     path("reservas/", views.reservas, name="reservas"),
     path("reservas/<int:id_reserva>/cancelar/", views.cancelar_reserva, name="reserva_cancelar"),
+    path("reservas/<int:id_reserva>/estado/", views.cambiar_estado_reserva, name="reserva_cambiar_estado"),
     path(
         "reservas/<int:id_reserva>/habitaciones/<int:id_habitacion>/agregar/",
         views.reservar_otra_habitacion,
