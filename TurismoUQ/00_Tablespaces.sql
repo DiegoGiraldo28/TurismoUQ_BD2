@@ -2,7 +2,6 @@
    TURISMOUQ - 00_Tablespaces.sql
    Ejecutar PRIMERO, conectado como SYSTEM al PDB de XE:
        sqlplus system@localhost:1521/XEPDB1
-   (si estas en el CDB, descomenta la siguiente linea)
    ============================================================ */
 -- ALTER SESSION SET CONTAINER = XEPDB1;
 SET SERVEROUTPUT ON;
@@ -23,12 +22,6 @@ SET SERVEROUTPUT ON;
       de analisis) no compite con el del catalogo, y se puede ubicar en
       almacenamiento mas barato.
    ------------------------------------------------------------ */
-
--- Cada tablespace necesita un datafile con ruta. En muchas instalaciones de XE
--- no hay carpeta automatica configurada (error ORA-02236 si se omite la ruta),
--- asi que el script toma la carpeta donde ya esta el datafile del tablespace
--- SYSTEM del PDB y crea ahi los dos datafiles nuevos. Funciona en Windows y Linux.
---
 -- Sentencias que ejecuta el bloque (con v_dir = carpeta de datos del PDB):
 --   CREATE TABLESPACE ts_turismo_datos
 --       DATAFILE '<v_dir>ts_turismo_datos01.dbf' SIZE 100M AUTOEXTEND ON NEXT 20M MAXSIZE 1G
@@ -90,6 +83,3 @@ SELECT tablespace_name, ROUND(SUM(bytes) / 1024 / 1024) AS mb_libres
 -- Cuando ya exista el esquema cargado (como SYSTEM), ver que segmentos estan donde:
 --   SELECT segment_name, segment_type, tablespace_name
 --     FROM dba_segments WHERE owner = 'TURISMOUQ' ORDER BY tablespace_name, segment_name;
-
--- A partir de aqui, conectate como TURISMOUQ y ejecuta 01, 02, 03, 04 y 05 en orden:
---   CONNECT turismouq/"TurismoUQ_2026"@localhost:1521/XEPDB1
